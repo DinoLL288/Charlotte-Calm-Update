@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Charlotte &amp; Luke</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <script>
+    /* Lets the page arrive gently. If scripts or motion are off, everything is simply visible. */
+    (function () {
+      var root = document.documentElement;
+      var off = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!off) {
+        root.classList.add('motion-ok');
+        setTimeout(function () { root.classList.add('motion-failsafe'); }, 3500);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    /* ---------- Hero: one photo, one title, one number ---------- */
+    .hub-hero {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 460px;
+      padding: 96px 22px 64px;
+      overflow: hidden;
+      color: #ffffff;
+      text-align: center;
+      background: #16324a;
+    }
+
+    .hub-hero-photo {
+      position: absolute;
+      inset: 0;
+      background: url("holding-hands.jpg") center 35% / cover no-repeat;
+    }
+
+    .hub-hero-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(18, 40, 58, 0.55) 0%, rgba(18, 40, 58, 0.62) 55%, rgba(18, 40, 58, 0.82) 100%);
+    }
+
+    .hub-hero-inner { position: relative; width: min(560px, 100%); }
+
+    .hub-hero .eyebrow { color: #ecd7a0; font-size: 1rem; font-family: var(--font-display); font-style: italic; font-weight: 400; }
+
+    .hub-hero h1 {
+      margin: 10px 0 14px;
+      color: #ffffff;
+      font-size: clamp(2.5rem, 9vw, 4.2rem);
+      line-height: 1.08;
+    }
+
+    .hub-hero .word { display: inline-block; }
+
+    .hub-hero-sub {
+      max-width: 34ch;
+      margin: 0 auto 30px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .together-since { margin: 16px 0 0; color: rgba(255, 255, 255, 0.78); font-size: 0.9rem; }
+
+    /* ---------- Quiet days notice ---------- */
+    .quiet-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: min(1040px, calc(100% - 40px));
+      margin: 22px auto 0;
+      padding: 14px 18px;
+      border: 1px solid #dfd6ef;
+      border-radius: var(--r-md);
+      color: #4c3d6b;
+      background: #f3eefa;
+      text-decoration: none;
+    }
+    .quiet-banner[hidden] { display: none; }
+    .quiet-text { display: grid; flex: 1; gap: 2px; }
+    .quiet-label { font-weight: 700; }
+    .quiet-detail { font-size: 0.92rem; opacity: 0.85; }
+    .quiet-arrow { opacity: 0.7; }
+
+    /* ---------- Rooms ---------- */
+    .explore { width: min(1040px, calc(100% - 40px)); margin: 0 auto; padding: 44px 0 24px; }
+
+    .explore-head { margin: 0 0 26px; text-align: center; }
+    .explore-head h2 { margin: 0 0 6px; font-size: clamp(1.7rem, 5vw, 2.2rem); font-weight: 400; }
+    .explore-head p { margin: 0; color: var(--ink-soft); }
+
+    .groups { display: grid; gap: 28px; }
+
+    .group-title {
+      margin: 0 0 10px 6px;
+      color: var(--ink-soft);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .group-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .hub-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 68px;
+      padding: 12px 16px;
+      color: var(--ink);
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hub-row + .hub-row { border-top: 1px solid var(--line); }
+    .hub-row:hover { background: var(--accent-soft); }
+
+    .row-icon {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--surface-soft);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .row-text { display: grid; flex: 1; gap: 1px; min-width: 0; }
+    .row-title { font-weight: 700; font-size: 1.05rem; line-height: 1.3; }
+    .row-sub { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.4; }
+
+    .row-chev {
+      color: var(--ink-faint);
+      font-size: 1.5rem;
+      line-height: 1;
+      transition: transform 0.35s var(--ease-out), color 0.2s ease;
+    }
+    .hub-row:hover .row-chev { color: var(--accent-ink); transform: translateX(4px); }
+
+    /* ---------- Footer ---------- */
+    footer {
+      width: min(620px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 calc(110px + env(safe-area-inset-bottom, 0px));
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+    footer p { margin: 0 0 12px; }
+    footer a { color: var(--ink-soft); }
+    .footer-links { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-top: 4px; }
+
+    @media (min-width: 860px) {
+      .groups { grid-template-columns: 1fr 1fr; align-items: start; gap: 28px 32px; }
+      .hub-hero { min-height: 520px; }
+    }
+
+    /* ---------- Arrival (runs once) ---------- */
+    @keyframes photo-settle { from { transform: scale(1.08); } to { transform: scale(1); } }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hub-hero-photo { animation: photo-settle 2.8s var(--ease-out) both; }
+      .hub-hero .eyebrow { animation: focus-in 0.9s var(--ease-out) 0.1s backwards; }
+      .hub-hero .word { animation: focus-in 0.95s var(--ease-out) backwards; animation-delay: calc(var(--i) * 110ms + 250ms); }
+      .hub-hero-sub { animation: focus-in 0.9s var(--ease-out) 0.85s backwards; }
+      .hub-hero .together { animation: focus-in 0.9s var(--ease-out) 1.05s backwards; }
+      .together-since { animation: focus-in 0.9s var(--ease-out) 1.2s backwards; }
+    }
+  </style>
+  <link rel="stylesheet" href="motion.css">
+  <script src="motion.js" defer></script>
+</head>
+
+<body>
+  <header class="hub-hero">
+    <div class="hub-hero-photo" aria-hidden="true"></div>
+    <div class="hub-hero-inner">
+      <p class="eyebrow">Charlotte &amp; Luke</p>
+      <h1><span class="word" style="--i:0">Our</span> <span class="word" style="--i:1">little</span> <span class="word" style="--i:2">universe</span></h1>
+      <p class="hub-hero-sub">Every note, photo, plan and promise — kept in one quiet corner of the internet.</p>
+      <div class="together" data-together role="timer" aria-label="Time we have been together"></div>
+      <p class="together-since">Together since 26 October 2026 · 5:46 pm</p>
+    </div>
+  </header>
+
+  <a class="quiet-banner" id="quietBanner" href="apart.html" hidden>
+    <span class="quiet-icon" aria-hidden="true">🌙</span>
+    <span class="quiet-text">
+      <span class="quiet-label" id="quietLabel">Quiet days</span>
+      <span class="quiet-detail" id="quietDetail"></span>
+    </span>
+    <span class="quiet-arrow" aria-hidden="true">→</span>
+  </a>
+
+  <main class="explore" id="explore">
+    <div class="explore-head">
+      <h2>Pick a mood, wander in</h2>
+      <p>Every room has a little piece of us.</p>
+    </div>
+
+    <div class="groups">
+      <section class="reveal" aria-labelledby="g-memories">
+        <h3 class="group-title" id="g-memories">Memories</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="love.html"><span class="row-icon" aria-hidden="true">🤍</span><span class="row-text"><span class="row-title">Our love</span><span class="row-sub">The heart &amp; our little memory</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="timeline.html"><span class="row-icon" aria-hidden="true">🌅</span><span class="row-text"><span class="row-title">Our timeline</span><span class="row-sub">The story so far, in pictures</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="gallery.html"><span class="row-icon" aria-hidden="true">📷</span><span class="row-text"><span class="row-title">Photos &amp; videos</span><span class="row-sub">Our albums, photos and little movies</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="messages.html"><span class="row-icon" aria-hidden="true">✉️</span><span class="row-text"><span class="row-title">Notes</span><span class="row-sub">Messages we leave for each other</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" style="--d:80ms" aria-labelledby="g-plans">
+        <h3 class="group-title" id="g-plans">Plans</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="calendar.html"><span class="row-icon" aria-hidden="true">📅</span><span class="row-text"><span class="row-title">Calendar</span><span class="row-sub">Dates, plans and countdowns</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="tiktok.html"><span class="row-icon" aria-hidden="true">🎵</span><span class="row-text"><span class="row-title">TikTok plans</span><span class="row-sub">Videos we want to dance to</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="our-life.html"><span class="row-icon" aria-hidden="true">🧩</span><span class="row-text"><span class="row-title">Things we make together</span><span class="row-sub">Recipes, recommendations, awards and projects</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" aria-labelledby="g-play">
+        <h3 class="group-title" id="g-play">Play</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="play.html"><span class="row-icon" aria-hidden="true">🎲</span><span class="row-text"><span class="row-title">Play &amp; ask</span><span class="row-sub">A question ritual and little games</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="question-night.html"><span class="row-icon" aria-hidden="true">💬</span><span class="row-text"><span class="row-title">Question night</span><span class="row-sub">A shared room that opens when we’re both ready</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+
+      <section class="reveal" style="--d:80ms" aria-labelledby="g-care">
+        <h3 class="group-title" id="g-care">Looking after us</h3>
+        <div class="group-card">
+          <a class="hub-row glow" href="rules.html"><span class="row-icon" aria-hidden="true">🕊️</span><span class="row-text"><span class="row-title">Rules &amp; boundaries</span><span class="row-sub">What we agree on and what we need</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="apart.html"><span class="row-icon" aria-hidden="true">🌙</span><span class="row-text"><span class="row-title">Quiet days</span><span class="row-sub">When one of us needs some space</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+          <a class="hub-row glow" href="bathroom.html"><span class="row-icon" aria-hidden="true">🚻</span><span class="row-text"><span class="row-title">Bathroom check-ins</span><span class="row-sub">A little update when one of us steps away</span></span><span class="row-chev" aria-hidden="true">›</span></a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Our video shelf lets us upload videos to YouTube as Unlisted so we can watch them together here. Google access is requested only when we choose to upload or confirm a video. <a href="privacy.html">How our data is used</a>.</p>
+    <p>Charlotte &amp; Luke · made with care</p>
+    <span class="footer-links"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="vault.html" target="_top">Our little safe</a></span>
+  </footer>
+
+  <script>
+    (function () {
+      const banner = document.getElementById('quietBanner');
+      const label = document.getElementById('quietLabel');
+      const detail = document.getElementById('quietDetail');
+      if (!banner || !label || !detail) return;
+
+      function pad(value) {
+        return value < 10 ? '0' + value : String(value);
+      }
+
+      function todayString() {
+        const now = new Date();
+        return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+      }
+
+      function toDate(value) {
+        const parts = String(value || '').split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+
+      function longDate(value) {
+        return toDate(value).toLocaleDateString(undefined, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        });
+      }
+
+      fetch('/api/apart')
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (json) {
+          if (!json || !Array.isArray(json.entries) || !json.entries.length) return;
+
+          const today = todayString();
+          const active = json.entries
+            .filter(function (entry) {
+              return entry.from <= today && today <= entry.until;
+            })
+            .sort(function (a, b) { return a.until.localeCompare(b.until); })[0];
+          const upcoming = json.entries
+            .filter(function (entry) { return entry.from > today; })
+            .sort(function (a, b) { return a.from.localeCompare(b.from); })[0];
+
+          if (active) {
+            label.textContent = 'Quiet days are on';
+            detail.textContent = 'No visits until ' + longDate(active.until);
+          } else if (upcoming) {
+            const who = upcoming.author && upcoming.author !== 'Unknown' ? upcoming.author : 'Someone';
+            label.textContent = 'Quiet days ahead';
+            detail.textContent = who + "'s quiet days start " + longDate(upcoming.from);
+          } else {
+            return;
+          }
+
+          banner.hidden = false;
+        })
+        .catch(function () {
+          // No API yet — leave the banner hidden.
+        });
+    })();
+  </script>
+  <script src="together.js"></script>
+  <script src="avatar.js"></script>
+</body>
+</html>

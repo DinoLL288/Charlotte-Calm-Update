@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play &amp; ask</title>
+  <script>if (!localStorage.getItem('charlotte-user')) location.href = 'login.html';</script>
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .hero { padding:78px 20px 66px;text-align:center;color:white;background:linear-gradient(160deg,#0d2c44,#2a78a8) }
+    .hero .eyebrow{color:var(--gold-soft)}.hero h1{margin:10px 0;font-size:clamp(2.2rem,7vw,3.5rem);font-weight:400}.hero p:last-child{max-width:54ch;margin:0 auto;color:#e6f3fc;line-height:1.6}
+    .top-bar{position:absolute;top:16px;left:16px;z-index:2}.shell{width:min(920px,100%);margin:-30px auto 60px;padding:0 18px;position:relative}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:10px;border-radius:18px;background:rgba(255,255,255,.93);box-shadow:0 14px 36px #143f5f22}.tab{flex:none;border:0;border-radius:999px;padding:10px 15px;color:#315d78;background:transparent;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}.tab[aria-selected=true]{color:#fff;background:#143f5f}
+    .panel{display:none;margin-top:18px;padding:clamp(20px,4vw,32px);border:1px solid white;border-radius:24px;background:rgba(255,253,247,.97);box-shadow:0 20px 55px #143f5f22}.panel.active{display:block}.panel h2{margin:0;color:#123a58;font-size:1.8rem}.intro{margin:8px 0 22px;color:#5c7c93;line-height:1.55}
+    .composer{display:grid;gap:11px;padding:18px;border-radius:17px;background:#f1f8fc}.composer input,.composer textarea,.composer select{width:100%;padding:12px 14px;border:1px solid #c8dceb;border-radius:11px;color:var(--ink);background:#fff;font:inherit}.composer textarea{min-height:100px;resize:vertical}.composer .button{justify-self:start}
+    .entries{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-top:18px}.card{padding:18px;border:1px solid #e1ecf2;border-radius:17px;background:linear-gradient(145deg,#fff,#f8fbfd)}.card h3{margin:0 0 8px;color:#123a58;font:700 1.18rem var(--font-display)}.card p{margin:7px 0;color:#486a83;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.small{border:1px solid #d5e3ec;border-radius:999px;padding:8px 12px;color:#24516e;background:#fff;font:inherit;font-weight:700;cursor:pointer}.danger{color:#754936}.actions{display:flex;gap:8px;margin-top:12px}.empty{grid-column:1/-1;padding:24px;border:1px dashed #bfd5e3;border-radius:16px;text-align:center;color:#5c7c93}
+    .locked{margin:18px 0;padding:22px;border-radius:18px;text-align:center;color:#684f1d;background:#fff5d9}.locked strong{display:block;margin-bottom:5px;font:700 1.2rem var(--font-display)}.prompt{padding:18px;border-radius:16px;background:#f1f8fc;color:#123a58;font:1.22rem/1.5 var(--font-display)}.prompt + .prompt{margin-top:10px}.bingo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}.bingo-square{min-height:95px;border:1px solid #d8e6ee;border-radius:14px;padding:10px;color:#315d78;background:white;font-family:var(--font-body);font-size:.9rem;font-weight:700;line-height:1.35;cursor:pointer}.bingo-square.done{color:#68521e;background:#fff2ce;border-color:#d9bc71;text-decoration:line-through}.page-status{min-height:1.4em;margin:12px 4px 0;color:#754936}
+    @media(max-width:520px){.hero{padding-top:88px}.bingo-grid{gap:5px}.bingo-square{min-height:80px;padding:7px;font-size:.78rem}}
+  </style>
+  <style>
+    body{background:linear-gradient(155deg,#fff5df 0%,#e8f6ff 48%,#d8effb 100%)}.hero{position:relative;overflow:hidden;padding:96px 20px 88px;background:radial-gradient(circle at 15% 18%,#ffe9ad55 0 8px,transparent 9px),radial-gradient(circle at 84% 21%,#ffffff35 0 13px,transparent 14px),linear-gradient(145deg,#193a53,#377fa3 58%,#79b4c9)}.hero:after{content:"🎲  ✨  🗝️";position:absolute;bottom:15px;left:50%;transform:translateX(-50%);font-size:1.15rem;letter-spacing:.65rem;filter:drop-shadow(0 3px 8px #092e4380)}.hero h1{font-size:clamp(2.6rem,7vw,4.4rem);text-shadow:0 4px 22px #092a4080}.hero p:last-child{font-size:1.08rem}.shell{width:min(980px,100%);margin:-36px auto 70px}.tabs{position:relative;z-index:2;justify-content:center;flex-wrap:wrap;gap:9px;padding:12px;border:1px solid #fff;border-radius:24px;background:#fffefaed;box-shadow:0 18px 42px #183e5a20}.tab{border:1px solid transparent;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}.tab:hover{transform:translateY(-2px);background:#edf8fc}.tab[aria-selected=true]{border-color:#fff;color:#fff;background:linear-gradient(135deg,#19435e,#3481a2);box-shadow:0 8px 18px #18496535}.tab[href]{border-color:#e9d9b4;color:#73591f;background:#fff7df}.panel{margin-top:18px;padding:clamp(22px,4vw,36px);border:1px solid #fff;border-radius:28px;background:linear-gradient(145deg,#fffefa,#f4fbff);box-shadow:0 20px 50px #183e5a20}.panel h2{display:flex;align-items:center;gap:11px;font-size:clamp(1.45rem,3vw,2rem)}#panel-jokes h2:before{content:"🗝️";display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#fff0c7;font-size:1.4rem}#panel-bingo h2:before{content:"🎉";display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#e4f3fb;font-size:1.4rem}#panel-hunt h2:before{content:"🕵️";display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#f8edcf;font-size:1.4rem}.intro{margin-top:8px;line-height:1.65}.composer{border:1px solid #e4edf0;border-radius:21px;background:linear-gradient(145deg,#f0f9ff,#fff9e9)}.composer input,.composer textarea,.composer select{border-radius:13px;background:#fffefa}.composer input:focus,.composer textarea:focus,.composer select:focus{outline:3px solid #b8ddec;outline-offset:1px}.entries{gap:14px}.card{position:relative;overflow:hidden;padding:21px;border:1px solid #fff;border-radius:22px;background:linear-gradient(145deg,#fff,#f0f8fc);box-shadow:0 10px 28px #17486618;transition:transform .2s ease,box-shadow .2s ease}.card:hover{transform:translateY(-3px) rotate(-.25deg);box-shadow:0 16px 32px #17486626}.card h3{font-size:1.22rem}.card p{line-height:1.65}.danger{border-color:#eadccd;background:#fffaf2}.bingo-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.bingo-square{position:relative;overflow:hidden;min-height:112px;border:1px solid #fff;border-radius:20px;padding:12px;color:#224e68;background:linear-gradient(145deg,#fffefa,#f0f9fc);box-shadow:0 8px 20px #17486617;font-size:.95rem;transition:transform .18s ease,box-shadow .18s ease}.bingo-square:after{content:"✦";position:absolute;top:7px;right:10px;color:#c9a24a;font-size:.85rem;opacity:.75}.bingo-square:hover{transform:translateY(-3px) rotate(-1deg);box-shadow:0 13px 25px #17486627}.bingo-square.done{color:#5e4b22;background:linear-gradient(145deg,#fff0bd,#fffae9);border-color:#e8ce87;text-decoration:none}.bingo-square.done:before{content:"✓";display:block;margin-bottom:3px;font-size:1.3rem}.locked{border:1px solid #f0dca5;background:linear-gradient(145deg,#fff6d9,#fffefa)}.prompt{border:1px solid #d8eaf2;border-radius:20px;background:linear-gradient(145deg,#edf8fd,#fffefa);box-shadow:0 8px 22px #17486612}.page-status{padding:8px 12px;border-radius:14px;color:#684f1d;background:#fff6dc}
+    @media(max-width:520px){.hero{padding:96px 18px 82px}.shell{padding:0 12px}.tabs{justify-content:flex-start;flex-wrap:nowrap}.tab{padding:10px 13px}.panel{padding:22px 17px;border-radius:24px}.bingo-grid{gap:7px}.bingo-square{min-height:88px;padding:9px;font-size:.8rem}}
+  </style>
+  <style>
+    .card-sticker{float:right;position:relative;z-index:1;display:grid;place-items:center;width:38px;height:38px;margin:-3px -3px 6px 8px;border-radius:14px;background:#fff0c7;font-size:1.1rem}.card:before{display:none}.memory-author{clear:both;padding-top:8px;color:#8a6d2b!important;font-size:.84rem;font-weight:700}.revealed-clue{clear:both;padding:14px 16px;border:1px dashed #c6dce7;border-radius:15px;background:#fffefa}.bingo-square:focus-visible,.tab:focus-visible{outline:3px solid #c9a24a;outline-offset:3px}.bingo-square.done{transform:scale(.98)}
+    #panel-truthdare h2:before{content:"🎲";display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#fff0c7;font-size:1.4rem}.td-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0}.td-toolbar select,.td-rules input,.td-custom input,.td-custom textarea{padding:11px 13px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#234b65;font:inherit}.td-rules,.td-custom,.td-current,.td-history{margin-top:18px;padding:18px;border:1px solid #e4edf0;border-radius:20px;background:linear-gradient(145deg,#f0f9ff,#fff9e9)}.td-rules form,.td-custom form{display:flex;align-items:end;flex-wrap:wrap;gap:10px}.td-rules label{display:grid;gap:6px;color:#486a83;font-size:.88rem;font-weight:700}.td-custom textarea{width:100%;min-height:85px;resize:vertical}.td-custom form{display:grid;grid-template-columns:1fr 1fr}.td-custom label{display:grid;gap:6px;color:#486a83;font-size:.88rem;font-weight:700}.td-custom label:first-child,.td-custom textarea,.td-custom button{grid-column:1/-1}.td-choice{display:flex;flex-wrap:wrap;gap:9px}.td-choice button{min-width:130px;padding:13px 20px;border:1px solid #fff;border-radius:999px;color:#fff;background:linear-gradient(135deg,#19435e,#3481a2);font:700 1rem var(--font-body);box-shadow:0 8px 18px #1849652b;cursor:pointer}.td-choice button[data-type="dare"]{background:linear-gradient(135deg,#936c2c,#d2a34d)}.td-current{min-height:100px;display:grid;align-content:center;text-align:center}.td-current .td-prompt{margin:8px auto;max-width:48ch;color:#173f5c;font:1.5rem/1.5 var(--font-display)}.td-current .td-label{color:#8a6d2b;font-size:.76rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.td-rules small,.td-custom small{color:#688398}.td-history-list{display:grid;gap:8px;margin-top:12px}.td-history-item{padding:11px 13px;border-radius:13px;background:#ffffffb8;color:#486a83}.td-history-item strong{color:#174866}.td-remove{float:right}.td-status{min-height:1.4em;color:#73591f;font-weight:700}
+    @media(max-width:520px){.td-custom form{grid-template-columns:1fr}.td-custom label,.td-custom textarea,.td-custom button{grid-column:1}.td-choice button{flex:1}}
+  </style>
+  <style>
+    #panel-truthdare{overflow:hidden;position:relative;background:linear-gradient(155deg,#fffdf7,#f4faff 54%,#fff8e8)}#panel-truthdare>h2:first-child:before{display:none}.td-game-banner{position:relative;display:flex;align-items:center;gap:16px;overflow:hidden;padding:22px;border:1px solid #fff;border-radius:25px;background:radial-gradient(circle at 88% 18%,#ffffffc9 0 7px,transparent 8px),linear-gradient(120deg,#e6f4fb,#fff5d9);box-shadow:0 12px 28px #17486612}.td-game-sticker{display:grid;place-items:center;width:68px;height:68px;flex:none;border:1px solid #fff;border-radius:23px;background:#fffefa;font-size:2.1rem;box-shadow:0 8px 18px #17486617;transform:rotate(-7deg)}.td-kicker{margin:0 0 3px;color:#97742c;font-size:.7rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.td-game-banner h2{margin:0;color:#173f5c;font:400 clamp(1.7rem,4vw,2.4rem) var(--font-display)}.td-game-banner p:last-child{margin:5px 0 0;color:#607e92;line-height:1.45}.td-sparkle{position:absolute;right:23px;bottom:14px;color:#c39b45;font-size:1.5rem}.td-kindness{margin:12px 4px;color:#6d8190}.td-toolbar{justify-content:flex-start;padding:12px 14px;border:1px solid #e3edf1;border-radius:17px;background:#fffefa}.td-toolbar label{color:#486a83;font-size:.9rem;font-weight:800}.td-toolbar select{min-width:170px;padding:10px 13px;border:1px solid #d2e3eb;border-radius:999px;background:#f5fafc;color:#234b65;font:700 .9rem var(--font-body)}.td-status{margin-left:auto;font-size:.82rem}.td-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:14px 0}.td-choice button{display:grid;grid-template-columns:53px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:13px;min-height:96px;padding:15px 18px;border:1px solid #fff;border-radius:22px;color:#174866;background:linear-gradient(135deg,#e8f6fb,#fffefa);text-align:left;box-shadow:0 9px 22px #17486616;transition:transform .2s ease,box-shadow .2s ease}.td-choice button:hover:not(:disabled){transform:translateY(-3px) rotate(-.5deg);box-shadow:0 15px 28px #17486624}.td-choice button[data-type="dare"]{color:#6d5423;background:linear-gradient(135deg,#fff0c5,#fffefa)}.td-choice button:disabled{opacity:.52;cursor:not-allowed;filter:grayscale(.25)}.td-choice-icon{grid-row:1/3;display:grid;place-items:center;width:51px;height:51px;border:1px solid #fff;border-radius:17px;background:#fffefa;font-size:1.65rem;box-shadow:0 4px 12px #17486612}.td-choice strong{align-self:end;font:700 1.2rem var(--font-display)}.td-choice small{align-self:start;color:#70879a;font-size:.78rem}.td-current{position:relative;isolation:isolate;min-height:205px;overflow:hidden;gap:5px;padding:26px;border:1px dashed #cfdfdf;border-radius:26px;background:radial-gradient(circle at 12% 20%,#ffffffb0 0 10px,transparent 11px),linear-gradient(145deg,#f1f9fc,#fff6df);box-shadow:inset 0 1px 0 #fff,0 12px 27px #17486612}.td-current:before,.td-current:after{position:absolute;z-index:-1;color:#d8bb74;opacity:.5}.td-current:before{content:"✦";top:16px;left:20px;font-size:1.1rem}.td-current:after{content:"✧";right:20px;bottom:14px;font-size:1.8rem}.td-current .td-label{display:inline-flex;justify-self:center;gap:7px;padding:6px 11px;border:1px solid #fff;border-radius:999px;color:#876a28;background:#fffefa;font-size:.69rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.td-type-badge{display:inline-flex;align-items:center;gap:6px}.td-current .td-prompt{max-width:48ch;margin:9px auto;color:#173f5c;font:clamp(1.25rem,3vw,1.75rem)/1.45 var(--font-display)}.td-current #tdDismiss{justify-self:center;margin-top:6px}.td-author-badge{display:inline-flex;align-items:center;gap:5px;margin:4px 2px 0;padding:5px 9px;border:1px solid #e5eaf0;border-radius:999px;color:#516c7f;background:#fffefa;font-size:.72rem;font-weight:800;white-space:nowrap}.td-author-dot{display:grid;place-items:center;width:21px;height:21px;border-radius:50%;color:#5b542f;background:#fff0c7;font-size:.7rem}.td-custom .td-history-item,.td-history .td-history-item{position:relative;padding:13px 14px;border:1px solid #fff;border-radius:16px;background:#ffffffc9;box-shadow:0 5px 14px #1748660b;line-height:1.5}.td-history-item strong{display:inline-flex;align-items:center;gap:5px;margin-right:4px;padding:3px 8px;border-radius:999px;color:#496579;background:#edf6fa;font-size:.72rem;text-transform:capitalize}.td-history-item small{display:inline-block;margin-top:4px;color:#698195}.td-history-item .td-author-badge{margin:7px 3px 0 0}.td-section-heading{display:flex;align-items:center;gap:11px;margin-bottom:13px}.td-section-heading>span{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid #fff;border-radius:15px;background:#fff1d0;font-size:1.25rem}.td-custom .td-section-heading>span{background:#e7f3f9}.td-history .td-section-heading>span{background:#f0eafa}.td-section-heading h3{margin:0;color:#174866;font:700 1.15rem var(--font-display)}.td-section-heading p{margin:3px 0 0;color:#75899a;font-size:.82rem}.td-rules,.td-custom,.td-history{padding:20px;border:1px solid #fff;border-radius:23px;background:linear-gradient(145deg,#fffefa,#f5fafe);box-shadow:0 9px 24px #1748660d}.td-rules form{align-items:end}.td-rule-label{display:flex!important;align-items:center;gap:6px;color:#486a83;font-size:.86rem;font-weight:700}.td-rule-label input{width:68px}.td-rule-label span{color:#486a83}.td-custom form{gap:11px}.td-custom form>label{display:grid;gap:6px;color:#486a83;font-size:.85rem;font-weight:800}.td-custom .td-prompt-field{grid-column:1/-1}.td-custom textarea{min-height:95px}.td-custom form select{padding:11px 13px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#234b65;font:inherit}.td-custom form button{justify-self:start;grid-column:1/-1}.td-remove{margin-left:8px}.td-history{margin-bottom:5px}.td-history-list{gap:9px}.td-current .td-author-badge{justify-self:center}.td-current .td-label + .td-prompt{margin-top:10px}
+    @media(max-width:600px){.td-game-banner{padding:17px;border-radius:21px}.td-game-sticker{width:55px;height:55px;border-radius:18px;font-size:1.7rem}.td-sparkle{right:13px;bottom:8px}.td-toolbar{align-items:flex-start;flex-wrap:wrap}.td-toolbar label{width:100%}.td-toolbar select{flex:1}.td-status{width:100%;margin:0}.td-choice{gap:8px}.td-choice button{grid-template-columns:1fr;justify-items:center;gap:5px;min-height:130px;padding:12px 7px;text-align:center}.td-choice-icon{grid-row:auto;width:45px;height:45px}.td-choice strong{align-self:auto}.td-choice small{align-self:auto;font-size:.7rem}.td-rule-label{flex-wrap:wrap}.td-rules form{align-items:center}.td-custom form{grid-template-columns:1fr}.td-custom form>label,.td-custom .td-prompt-field,.td-custom form button{grid-column:1}.td-current{padding:22px 16px}}
+    @media(prefers-reduced-motion:reduce){.td-choice button{transition:none}}
+  </style>
+  <style>
+    .td-online{display:flex;align-items:center;gap:9px;width:max-content;max-width:100%;margin:6px 2px 12px;padding:8px 12px;border:1px solid #e1e9ec;border-radius:999px;color:#6a7480;background:#fffefa;font-size:.8rem;font-weight:800;box-shadow:0 4px 12px #1748660b}.td-online-dot{width:9px;height:9px;flex:none;border-radius:50%;background:#aeb8be;box-shadow:0 0 0 3px #aeb8be20}.td-online.is-ready{border-color:#cae3d1;color:#3b7050;background:#f2fbf3}.td-online.is-ready .td-online-dot{background:#62a978;box-shadow:0 0 0 3px #62a97824}.td-target-badge .td-author-dot{background:#e8f4fa}
+  </style>
+  <style>
+    .td-pending-list[hidden]{display:none}.td-pending-list{display:grid;gap:10px;margin:12px 0;padding:16px;border:1px solid #fff;border-radius:22px;background:linear-gradient(145deg,#fff8e7,#f2f9fc);box-shadow:0 9px 24px #17486610}.td-pick-heading{display:flex;align-items:center;gap:11px;margin-bottom:2px}.td-pick-heading>span{display:grid;place-items:center;width:39px;height:39px;border:1px solid #fff;border-radius:14px;background:#fffefa;font-size:1.2rem}.td-pick-heading strong,.td-pick-heading small{display:block}.td-pick-heading strong{color:#174866;font:700 1rem var(--font-display)}.td-pick-heading small{margin-top:3px;color:#70879a;font-size:.78rem}.td-pick-card{display:grid;gap:5px;padding:13px 15px;border:1px solid #fff;border-radius:16px;color:#234b65;background:#ffffffde;text-align:left;box-shadow:0 4px 12px #1748660b;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}.td-pick-card:hover{transform:translateY(-2px);box-shadow:0 9px 18px #17486618}.td-pick-kind{color:#95752f;font-size:.7rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.td-pick-prompt{font:1.03rem/1.45 var(--font-display)}.td-pick-for{color:#71889a;font-size:.76rem;font-weight:700}.td-pick-empty{margin:2px 0;color:#647f91;font-size:.84rem;line-height:1.5}.td-random-pick{justify-self:start;padding:10px 15px;border:1px solid #f0ddaa;border-radius:999px;color:#71591f;background:#fff4d5;font:700 .86rem var(--font-body);cursor:pointer}.td-random-pick:hover{background:#ffedbd}
+    @media(max-width:520px){.td-pending-list{padding:12px;border-radius:18px}.td-random-pick{justify-self:stretch}}
+  </style>
+  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+</head>
+<body>
+  <div class="top-bar"><a class="button" href="index.html">← Back to hub</a></div>
+  <header class="hero"><p class="eyebrow">our cozy game corner</p><h1>Play &amp; ask</h1><p>Inside jokes, tiny challenges, and little surprises made just for us.</p></header>
+  <main class="shell">
+    <nav class="tabs" aria-label="Play and ask">
+      <button class="tab" aria-selected="true" data-tab="jokes">🗝️ Our inside jokes</button>
+      <button class="tab" aria-selected="false" data-tab="bingo">🎉 Us bingo</button>
+      <button class="tab" aria-selected="false" data-tab="hunt">🕵️ Clue hunt</button>
+      <button class="tab" aria-selected="false" data-tab="truthdare">🎲 Truth or dare</button>
+      <a class="tab" href="question-night.html">💬 Question night</a>
+    </nav>
+    <section class="panel active" id="panel-jokes">
+      <h2>Inside-joke dictionary</h2><p class="intro">Keep the phrases, nicknames, and tiny stories that make us laugh every time.</p>
+      <form class="composer" data-type="insideJokes"><input name="title" maxlength="120" placeholder="The phrase or nickname" required><textarea name="body" maxlength="700" placeholder="How did this become our thing?" required></textarea><button class="button" type="submit">Tuck it into our dictionary ✨</button></form><div class="entries" id="list-insideJokes"></div>
+    </section>
+    <section class="panel" id="panel-bingo">
+      <h2>Us bingo</h2><p class="intro">Make a board of moments we hope happen. Tap a square when we get to share one.</p>
+      <form class="composer" data-type="bingo"><input name="title" maxlength="150" placeholder="Laugh until we can’t breathe" required><button class="button" type="submit">Add a square</button></form><div class="bingo-grid" id="list-bingo"></div>
+    </section>
+    <section class="panel" id="panel-hunt">
+      <h2>Little clue hunts</h2><p class="intro">Set up a tiny trail for a surprise. We’ll reveal each clue one at a time.</p>
+      <form class="composer" data-type="hunts"><input name="title" maxlength="100" placeholder="A little surprise for one of us" required><textarea name="clues" maxlength="3000" placeholder="Write one clue per line (at least two)" required></textarea><button class="button" type="submit">Make the hunt</button></form><div class="entries" id="list-hunts"></div>
+    </section>
+    <section class="panel" id="panel-truthdare">
+      <div class="td-game-banner"><span class="td-game-sticker" aria-hidden="true">🎲</span><div><p class="td-kicker">A little game for two</p><h2>Truth or dare?</h2><p>Our cozy corner for curious questions and silly challenges.</p></div><span class="td-sparkle" aria-hidden="true">✦</span></div>
+      <p class="intro td-kindness">Skip or swap anything, any time. A pass never needs an explanation. 💛</p>
+      <div class="td-toolbar"><label for="tdMode">How are we playing?</label><select id="tdMode"><option value="text">💬 Over text</option><option value="call">📞 On a call</option><option value="both">💞 Either one</option></select><span class="td-status" id="tdStatus" role="status">Loading our game…</span></div>
+      <div class="td-online" id="tdOnline" role="status"><span class="td-online-dot"></span><span>Checking whether we’re both here…</span></div>
+      <div class="td-choice"><button type="button" data-type="truth"><span class="td-choice-icon">💭</span><strong>Truth</strong><small>Tell me something real</small></button><button type="button" data-type="dare"><span class="td-choice-icon">✨</span><strong>Dare</strong><small>Try a tiny silly challenge</small></button></div>
+      <article class="td-current" id="tdCurrent" aria-live="polite"><span class="td-label">Our next little prompt</span><p class="td-prompt">Choose how we’re playing, then pick truth or dare.</p></article>
+      <div class="td-pending-list" id="tdPendingChoices" hidden></div>
+      <section class="td-rules"><div class="td-section-heading"><span aria-hidden="true">🧸</span><div><h3>Our house rules</h3><p>Made by us, followed by the game.</p></div></div><form id="tdRulesForm"><label class="td-rule-label">Max dares in a row<input type="number" name="maxDaresInRow" min="1" max="10" value="3" required></label><label class="td-rule-label">A dare at least every<input type="number" name="dareAfterTruths" min="1" max="20" value="5" required><span>truths</span></label><button class="small" type="submit">Save our rules ✨</button></form></section>
+      <section class="td-custom"><div class="td-section-heading"><span aria-hidden="true">📝</span><div><h3>Write prompts for each other</h3><p>Only we see our saved prompts until our partner draws one.</p></div></div><form id="tdCustomForm"><label class="td-prompt-field">Our prompt<textarea name="prompt" maxlength="300" placeholder="Write a kind, comfy prompt…" required></textarea></label><label>Truth or dare<select name="promptType"><option value="truth">💭 Truth</option><option value="dare">✨ Dare</option></select></label><label>Where can we use it?<select name="mode"><option value="text">💬 Over text</option><option value="call">📞 On a call</option><option value="both">💞 Both</option></select></label><button class="small" type="submit">＋ Add our prompt</button></form><div id="tdCustomList" class="td-history-list"></div></section>
+      <section class="td-history"><div class="td-section-heading"><span aria-hidden="true">📚</span><div><h3>Our prompt scrapbook</h3><p>Recently played and who brought each one to us.</p></div></div><div id="tdHistory" class="td-history-list"></div></section>
+    </section>
+    <p class="page-status" id="pageStatus" role="status"></p>
+  </main>
+  <script src="dialog.js"></script>
+  <script src="avatar.js"></script>
+  <script>
+    const user = localStorage.getItem('charlotte-user') || 'Unknown';
+    const data = { insideJokes: [], bingo: [], hunts: [] };
+    const pageStatus = document.getElementById('pageStatus');
+    let busy = false;
+    function safe(value) { const el = document.createElement('span'); el.textContent = value || ''; return el.innerHTML; }
+    document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
+      document.querySelectorAll('.panel').forEach(panel => panel.classList.toggle('active', panel.id === 'panel-' + button.dataset.tab));
+    }));
+    function render() {
+      document.getElementById('list-insideJokes').innerHTML = data.insideJokes.length ? data.insideJokes.map(item => `<article class="card"><span class="card-sticker" aria-hidden="true">💬</span><h3>${safe(item.title)}</h3><p>${safe(item.body)}</p><p class="memory-author">A little classic from ${safe(item.author)} ✨</p><button class="small danger" data-remove="insideJokes" data-id="${safe(item.id)}">Remove</button></article>`).join('') : '<div class="empty">Save the first phrase that makes us laugh.</div>';
+      document.getElementById('list-bingo').innerHTML = data.bingo.length ? data.bingo.map(item => `<button class="bingo-square ${item.done ? 'done' : ''}" data-bingo="${safe(item.id)}" aria-pressed="${Boolean(item.done)}">${safe(item.title)}</button>`).join('') : '<div class="empty">Add a few squares to start our board.</div>';
+      document.getElementById('list-hunts').innerHTML = data.hunts.length ? data.hunts.map(item => { const i = Math.min(item.revealed || 0, item.clues.length - 1); return `<article class="card"><span class="card-sticker" aria-hidden="true">🧭</span><h3>${safe(item.title)}</h3><p class="revealed-clue">${safe(item.clues[i])}</p><p class="meta">Clue ${i + 1} of ${item.clues.length}</p>${i + 1 < item.clues.length ? `<button class="small" data-hunt="${safe(item.id)}" data-next="${i + 1}">Reveal next clue ✨</button>` : '<p class="meta">We found the end ✨</p>'}<button class="small danger" data-remove="hunts" data-id="${safe(item.id)}">Remove</button></article>`; }).join('') : '<div class="empty">Make a little trail for our surprise.</div>';
+    }
+    async function post(body) {
+      if (busy) return false; busy = true; pageStatus.textContent = 'Saving…';
+      try { const res = await fetch('/api/heart',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); const json=await res.json(); if(!res.ok) throw new Error(json.error||'Could not save'); Object.assign(data,json.data||{}); render(); pageStatus.textContent='Saved.'; return true; }
+      catch(e){pageStatus.textContent=e.message;return false;} finally{busy=false;}
+    }
+    document.querySelectorAll('.composer[data-type]').forEach(form => form.addEventListener('submit', async e => {
+      e.preventDefault(); const fd=new FormData(form); const fields=Object.fromEntries(fd.entries());
+      if(form.dataset.type==='hunts') fields.clues=fields.clues.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+      if(await post({action:'add',type:form.dataset.type,item:{...fields,author:user}})) form.reset();
+    }));
+    document.addEventListener('click', async e => {
+      const remove=e.target.closest('[data-remove]'); if(remove && await siteDialog.confirm('Remove this from our shared collection?',{title:'Let this one go?'})) await post({action:'delete',type:remove.dataset.remove,id:remove.dataset.id});
+      const square=e.target.closest('[data-bingo]'); if(square){const item=data.bingo.find(x=>x.id===square.dataset.bingo);if(item)await post({action:'update',type:'bingo',id:item.id,done:!item.done});}
+      const hunt=e.target.closest('[data-hunt]'); if(hunt) await post({action:'update',type:'hunts',id:hunt.dataset.hunt,revealed:Number(hunt.dataset.next)});
+    });
+    fetch('/api/heart').then(async res=>{const json=await res.json();if(!res.ok)throw new Error(json.error||'Could not load');Object.assign(data,json.data||{});render();}).catch(e=>{pageStatus.textContent=e.message;render();});
+
+    let truthDare = null;
+    const tdStatus = document.getElementById('tdStatus');
+    const tdCurrent = document.getElementById('tdCurrent');
+    const tdMode = document.getElementById('tdMode');
+    const tdRulesForm = document.getElementById('tdRulesForm');
+    let roomOnline = [], roomConnected = false, roomSocket = null, roomPing = null, roomReconnect = null;
+    function connectTruthDareRoom() {
+      clearTimeout(roomReconnect);
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      roomSocket = new WebSocket(`${protocol}//${location.host}/api/question-room?user=${encodeURIComponent(user)}&sessionDate=2000-01-02`);
+      roomSocket.onopen = () => {
+        roomConnected = true;
+        clearInterval(roomPing);
+        roomPing = setInterval(() => { if (roomSocket?.readyState === WebSocket.OPEN) roomSocket.send(JSON.stringify({ type: 'ping' })); }, 20000);
+        if (truthDare) { renderTruthDare(); loadTruthDare(); }
+      };
+      roomSocket.onmessage = event => {
+        let message; try { message = JSON.parse(event.data); } catch { return; }
+        if (message.type === 'state') { roomOnline = message.online || []; if (truthDare) renderTruthDare(); }
+        if (message.type === 'refresh' && truthDare) loadTruthDare();
+      };
+      roomSocket.onerror = () => { roomConnected = false; if (truthDare) renderTruthDare(); };
+      roomSocket.onclose = () => {
+        clearInterval(roomPing); roomConnected = false; roomOnline = [];
+        if (truthDare) renderTruthDare();
+        roomReconnect = setTimeout(connectTruthDareRoom, 2500);
+      };
+    }
+    function renderTruthDare() {
+      if (!truthDare) return;
+      const rules = truthDare.rules || { maxDaresInRow: 3, dareAfterTruths: 5 };
+      if (document.activeElement !== tdRulesForm.elements.maxDaresInRow) tdRulesForm.elements.maxDaresInRow.value = rules.maxDaresInRow;
+      if (document.activeElement !== tdRulesForm.elements.dareAfterTruths) tdRulesForm.elements.dareAfterTruths.value = rules.dareAfterTruths;
+      const current = truthDare.current;
+      const pending = truthDare.pending;
+      const togetherOnline = roomConnected && ['Charlotte', 'Luke'].every(name => roomOnline.includes(name));
+      const onlineStatus = document.getElementById('tdOnline');
+      onlineStatus.classList.toggle('is-ready', togetherOnline);
+      const missing = ['Charlotte', 'Luke'].filter(name => !roomOnline.includes(name));
+      onlineStatus.querySelector('span:last-child').textContent = togetherOnline ? 'We’re both here — our prompts are unlocked ✨' : roomConnected ? `Waiting for ${missing.join(' and ')} to join us before we play.` : 'Connecting to our shared room…';
+      const authorBadge = name => name ? `<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">✍</span>${safe(name)} wrote this</span>` : '';
+      const targetBadge = name => name ? `<span class="td-author-badge td-target-badge"><span class="td-author-dot" aria-hidden="true">💌</span>For ${safe(name)}</span>` : '';
+      const modeLabel = mode => mode === 'both' ? 'text or call' : mode === 'call' ? 'on a call' : 'over text';
+      if (!togetherOnline) tdCurrent.innerHTML = '<span class="td-label">🔒 Our room is waiting</span><p class="td-prompt">Our prompt is tucked away until we’re both online together.</p>';
+      else if (pending?.chooser === user) tdCurrent.innerHTML = `<span class="td-label">${pending.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(pending.mode))} · for ${safe(pending.assignedTo)}</span><p class="td-prompt">${safe(pending.requestedBy)} picked the game. Choose a prompt just for them 💛</p>`;
+      else if (pending) tdCurrent.innerHTML = `<span class="td-label">A little surprise is on its way</span><p class="td-prompt">${safe(pending.chooser)} is choosing a ${safe(pending.type)} ${safe(modeLabel(pending.mode))} for me… 💌</p>`;
+      else if (current) tdCurrent.innerHTML = `<span class="td-label"><span class="td-type-badge">${current.type === 'truth' ? '💭 Truth' : '✨ Dare'}</span> · ${safe(modeLabel(current.mode))}</span><p class="td-prompt">${safe(current.prompt)}</p>${authorBadge(current.addedBy)}${targetBadge(current.assignedTo || current.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Chosen by ${safe(current.pickedBy || current.by)}</span><button class="small" type="button" id="tdDismiss">We’ve read it ✨</button>`;
+      else tdCurrent.innerHTML = '<span class="td-label">Our next little prompt</span><p class="td-prompt">Choose how we’re playing, then pick truth or dare.</p>';
+      const pendingChoices = document.getElementById('tdPendingChoices');
+      const isChooser = togetherOnline && pending && pending.chooser === user;
+      pendingChoices.hidden = !isChooser;
+      if (isChooser) {
+        const unusedIds = new Set(truthDare.usedPrompts || []);
+        const choices = (truthDare.customPrompts || []).filter(item => item.type === pending.type && (pending.mode === 'both' || item.mode === 'both' || item.mode === pending.mode) && !unusedIds.has(item.id));
+        const choicesMarkup = choices.map(item => `<button class="td-pick-card" type="button" data-td-prompt-id="${safe(item.id)}"><span class="td-pick-kind">${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</span><span class="td-pick-prompt">${safe(item.prompt)}</span><span class="td-pick-for">Just for ${safe(pending.assignedTo)} 💛</span></button>`).join('');
+        pendingChoices.innerHTML = `<div class="td-pick-heading"><span>✍️</span><div><strong>Pick one for ${safe(pending.assignedTo)}</strong><small>Only your own saved prompts are shown here.</small></div></div>${choicesMarkup || '<p class="td-pick-empty">No saved prompts of this kind left in our deck. We can still let the game surprise them.</p>'}<button class="td-random-pick" type="button" data-td-random>🎲 Surprise them with a random pick</button>`;
+      } else pendingChoices.replaceChildren();
+      document.getElementById('tdHistory').innerHTML = truthDare.history?.length ? truthDare.history.slice(0, 12).map(item => {
+        const addedBy = item.addedBy || truthDare.customPrompts?.find(prompt => prompt.id === item.promptId)?.author || '';
+        return `<div class="td-history-item"><strong>${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</strong>${safe(item.prompt)}<br>${authorBadge(addedBy)}${targetBadge(item.assignedTo || item.by)}<span class="td-author-badge"><span class="td-author-dot" aria-hidden="true">💌</span>Chosen by ${safe(item.pickedBy || item.by)}</span><small> · ${new Date(item.at).toLocaleDateString()}</small></div>`;
+      }).join('') : '<div class="empty">Our played prompts will be saved here, along with who added them.</div>';
+      document.getElementById('tdCustomList').innerHTML = truthDare.customPrompts?.length ? truthDare.customPrompts.map(item => { const recipient = item.assignedTo || (item.author === 'Charlotte' ? 'Luke' : 'Charlotte'); return `<div class="td-history-item"><strong>${item.type === 'truth' ? '💭 Truth' : '✨ Dare'} · ${safe(modeLabel(item.mode))}</strong>${safe(item.prompt)}<br>${authorBadge(item.author)}${targetBadge(recipient)}${item.author === user ? `<button class="small danger td-remove" type="button" data-td-remove="${safe(item.id)}" aria-label="Remove custom prompt">Remove</button>` : ''}</div>`; }).join('') : '<div class="td-history-item">No custom prompts yet. Let’s add the first one together ✨</div>';
+      const stats = truthDare.stats || { dareStreak: 0, truthsSinceDare: 0 };
+      document.querySelectorAll('.td-choice button').forEach(button => {
+        const blocked = !togetherOnline || Boolean(pending) || (button.dataset.type === 'dare' ? stats.dareStreak >= rules.maxDaresInRow : stats.truthsSinceDare >= rules.dareAfterTruths);
+        button.disabled = blocked;
+        button.title = !togetherOnline ? 'We both need to be online to draw a prompt.' : pending ? 'We are already choosing a prompt together.' : blocked ? (button.dataset.type === 'dare' ? 'Our rule says we need a truth first.' : 'Our rule says we need a dare now.') : '';
+      });
+    }
+    async function loadTruthDare() {
+      try { const response = await fetch('/api/question-room?view=truth-dare&user=' + encodeURIComponent(user), { cache: 'no-store' }); const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not load our game.'); truthDare = json; renderTruthDare(); tdStatus.textContent = 'Our game is saved and synced.'; }
+      catch (error) { tdStatus.textContent = error.message; }
+    }
+    async function postTruthDare(operation, extra = {}) {
+      tdStatus.textContent = 'Saving…';
+      try {
+        const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'truth-dare', operation, user, ...extra }) });
+        const json = await response.json(); if (!response.ok) throw new Error(json.error || 'Could not save our game.');
+        truthDare = json.data; renderTruthDare(); tdStatus.textContent = 'Saved for both of us.';
+      } catch (error) { tdStatus.textContent = error.message; await loadTruthDare(); }
+    }
+    document.querySelectorAll('.td-choice button').forEach(button => button.addEventListener('click', () => postTruthDare('request-prompt', { promptType: button.dataset.type, mode: tdMode.value })));
+    tdRulesForm.addEventListener('submit', event => { event.preventDefault(); postTruthDare('rules', { rules: { maxDaresInRow: tdRulesForm.elements.maxDaresInRow.value, dareAfterTruths: tdRulesForm.elements.dareAfterTruths.value } }); });
+    document.getElementById('tdCustomForm').addEventListener('submit', async event => {
+      event.preventDefault(); const form = event.currentTarget; const fields = Object.fromEntries(new FormData(form).entries());
+      await postTruthDare('add-prompt', fields); if (tdStatus.textContent.startsWith('Saved')) form.reset();
+    });
+    document.addEventListener('click', event => {
+      if (event.target.closest('#tdDismiss')) postTruthDare('clear-current');
+      const prompt = event.target.closest('[data-td-prompt-id]');
+      if (prompt) postTruthDare('select-prompt', { promptId: prompt.dataset.tdPromptId });
+      if (event.target.closest('[data-td-random]')) postTruthDare('select-prompt', { random: true });
+      const remove = event.target.closest('[data-td-remove]');
+      if (remove) postTruthDare('remove-prompt', { id: remove.dataset.tdRemove });
+    });
+    document.querySelector('[data-tab="truthdare"]').addEventListener('click', loadTruthDare);
+    connectTruthDareRoom();
+    window.addEventListener('pagehide', () => { clearInterval(roomPing); clearTimeout(roomReconnect); roomSocket?.close(); });
+    loadTruthDare();
+  </script>
+</body>
+</html>

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar</title>
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+    }
+    .screen {
+      width: min(1100px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 80px 18px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    h1 { margin: 0; color: #fff; font-size: clamp(2rem, 6vw, 3.6rem); text-shadow: 0 3px 14px #428ec080; }
+    .subtitle { margin: 0; color: #fff; font-size: clamp(1rem, 3vw, 1.2rem); text-shadow: 0 2px 8px #428ec080; }
+    .top-bar { position: fixed; top: 16px; left: 16px; z-index: 5; }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #fff;
+      text-shadow: 0 2px 8px #428ec080;
+    }
+    .calendar-header h2 { margin: 0; font-size: clamp(1.4rem, 4vw, 2rem); }
+    .calendar-header .button { padding: 10px 16px; }
+    .now-line {
+      margin: -8px 0 0;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-shadow: 0 2px 8px #428ec080;
+    }
+    .now-line span { opacity: 0.85; font-weight: 600; }
+    .calendar-grid {
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    .weekday {
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 1px 6px #428ec080;
+      padding: 6px 0;
+    }
+    .day {
+      background: #ffffffee;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px #347eac25;
+      min-height: 110px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .day:hover { box-shadow: 0 12px 28px #347eac40; }
+    .day.muted { opacity: 0.5; }
+    .day.today {
+      background: #ffffff;
+      box-shadow: 0 0 0 3px #4aa8e0, 0 14px 34px #347eac55;
+    }
+    .day.today .day-number { color: #1f6fa8; }
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .day-number { font-weight: 700; color: #2873a6; }
+    .today-tag {
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #fff;
+      background: #4aa8e0;
+      border-radius: 999px;
+      padding: 2px 8px;
+      text-transform: uppercase;
+    }
+    .add-btn {
+      border: 0;
+      background: transparent;
+      color: #3b7db3;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .event {
+      background: #e8f6ff;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      text-align: left;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .event:hover { background: #d8efff; }
+    .event-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .event-top strong { line-height: 1.2; }
+    .event-clock {
+      flex: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #2873a6;
+      background: #ffffffb0;
+      border-radius: 999px;
+      padding: 1px 7px;
+    }
+    .event-details { font-size: 0.8rem; color: #3b7db3; }
+    .event-by { font-size: 0.75rem; color: #7fa9c6; }
+    .event-badge {
+      align-self: flex-start;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .event.now { background: #dff7e6; box-shadow: 0 0 0 2px #57c98a inset; }
+    .event.now .event-clock { color: #1f7a4d; background: #ffffffc0; }
+    .event.now .event-badge { background: #35a86b; color: #fff; }
+    .event.soon .event-badge { background: #dff0ff; color: #2873a6; }
+    .event.done { opacity: 0.6; }
+    .event.done .event-badge { background: #eef2f5; color: #7d8a94; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #245b8526;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal.active { display: flex; }
+    .modal-card {
+      width: min(420px, 92vw);
+      background: #ffffffee;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px #347eac40;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-card input, .modal-card textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #b9dcf5;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 0.98rem;
+    }
+    .modal-date {
+      margin-top: -8px;
+      font-size: 0.85rem;
+      color: #3b7db3;
+      font-weight: 700;
+    }
+    .title-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .title-row #eventTitle { flex: 1 1 180px; width: auto; }
+    .title-row #eventStart { flex: 0 0 auto; width: 150px; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .button.danger {
+      background: #ffe9e9;
+      color: #b53b3b;
+      margin-right: auto;
+    }
+    .modal-hint {
+      display: none;
+      font-size: 0.85rem;
+      color: #3b7db3;
+      background: #e8f6ff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      line-height: 1.35;
+    }
+    .modal-hint.visible { display: block; }
+    .calendar-tools {
+      width: min(980px, 94vw);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .tool-card { background: #ffffffed; border-radius: 20px; padding: 18px; box-shadow: 0 10px 24px #347eac25; }
+    .tool-card h2 { margin: 0 0 8px; font-size: 1.15rem; color: #245b85; }
+    .tool-card p { margin: 0 0 12px; font-size: .88rem; line-height: 1.5; }
+    .tool-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .tool-actions .button { padding: 9px 13px; font-size: .85rem; }
+    .feed-link { display:none; width:100%; margin-top:10px; padding:9px; border:1px solid #b9dcf5; border-radius:10px; overflow-wrap:anywhere; font-size:.78rem; }
+    .feed-link.visible { display:block; }
+    .call-fields { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .call-fields label { display:flex; flex-direction:column; gap:4px; font-size:.76rem; font-weight:700; }
+    .call-fields input,.call-fields select { min-width:0; width:100%; border-radius:10px; border:1px solid #b9dcf5; padding:9px; font:inherit; color:#245b85; }
+    .call-history { display:grid; gap:5px; max-height:120px; overflow:auto; margin-top:10px; font-size:.78rem; }
+    .call-history div { background:#eff8ff; border-radius:9px; padding:6px 8px; }
+    .event.quiet-calendar-event { background:#f1edfa; color:#635080; border:1px solid #e1d8f1; cursor:default; }
+    .event.call-event { background:#fff0f4; color:#8a4561; }
+    @media(max-width:700px) { .calendar-tools { grid-template-columns:1fr; } }
+  </style>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <div class="top-bar" style="left:auto; right:80px;">
+    <a class="button" href="tiktok.html">🎵 TikTok plans</a>
+  </div>
+  <main class="screen">
+    <h1>Calendar</h1>
+    <p class="subtitle">Click a day to add · click an event to edit</p>
+    <div class="calendar-header">
+      <button class="button" id="prevMonth">←</button>
+      <h2 id="monthLabel"></h2>
+      <button class="button" id="nextMonth">→</button>
+      <button class="button" id="todayBtn">Today</button>
+    </div>
+    <p class="now-line" id="nowLabel"></p>
+    <div class="calendar-grid" id="weekdayRow"></div>
+    <div class="calendar-grid" id="daysGrid"></div>
+    <details class="fold">
+      <summary>Calendar sync and call log</summary>
+    <section class="calendar-tools">
+      <div class="tool-card">
+        <h2>Sync our calendar</h2>
+        <p>Subscribe from Google Calendar or Apple Calendar. The private link includes our events, birthdays, anniversary, and quiet days. Anyone with the link can view it.</p>
+        <div class="tool-actions">
+          <button class="button" id="googleSync" type="button">Set up Google Calendar</button>
+          <button class="button" id="appleSync" type="button">Subscribe in Apple Calendar</button>
+          <button class="button" id="rotateFeed" type="button">Make a new private link</button>
+        </div>
+        <code class="feed-link" id="feedLink"></code>
+        <p id="feedStatus" role="status" style="margin:8px 0 0;"></p>
+      </div>
+      <div class="tool-card">
+        <h2>Log a WhatsApp call</h2>
+        <p>Add a call here after it happens. Our website can’t automatically read personal WhatsApp call history.</p>
+        <div class="call-fields">
+          <label>Day<input id="callDate" type="date"></label>
+          <label>Time<input id="callTime" type="time"></label>
+          <label>Type<select id="callType"><option value="voice">Voice call</option><option value="video">Video call</option></select></label>
+          <label>Minutes<input id="callDuration" type="number" min="1" max="1440" placeholder="Optional"></label>
+        </div>
+        <div class="tool-actions" style="margin-top:10px;"><button class="button" id="saveCall" type="button">Save call</button></div>
+        <div class="call-history" id="callHistory" aria-label="Recent WhatsApp calls"></div>
+      </div>
+    </section>
+    </details>
+  </main>
+
+  <div class="modal" id="eventModal">
+    <div class="modal-card">
+      <h3 style="margin:0; color:#2873a6;" id="eventModalTitle">Add event</h3>
+      <div class="modal-date" id="eventDateLabel"></div>
+      <div class="modal-hint" id="eventHint"></div>
+      <div class="title-row">
+        <input id="eventTitle" placeholder="Title">
+        <input id="eventStart" type="time" aria-label="Event time" title="Event time">
+      </div>
+      <textarea id="eventTime" rows="2" placeholder="Details (optional)"></textarea>
+      <div class="modal-actions">
+        <button class="button danger" id="deleteEvent" type="button" style="display:none;">Delete</button>
+        <button class="button" id="cancelEvent" type="button">Cancel</button>
+        <button class="button" id="saveEvent" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="special-dates.js"></script>
+  <script>
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthLabel = document.getElementById('monthLabel');
+    const weekdayRow = document.getElementById('weekdayRow');
+    const daysGrid = document.getElementById('daysGrid');
+    const prevMonth = document.getElementById('prevMonth');
+    const nextMonth = document.getElementById('nextMonth');
+    const modal = document.getElementById('eventModal');
+    const eventTitle = document.getElementById('eventTitle');
+    const eventTime = document.getElementById('eventTime');
+    const cancelEvent = document.getElementById('cancelEvent');
+    const saveEvent = document.getElementById('saveEvent');
+    const deleteEvent = document.getElementById('deleteEvent');
+    const modalTitle = document.getElementById('eventModalTitle');
+    const eventHint = document.getElementById('eventHint');
+    const eventStart = document.getElementById('eventStart');
+    const eventDateLabel = document.getElementById('eventDateLabel');
+    const todayBtn = document.getElementById('todayBtn');
+    const nowLabel = document.getElementById('nowLabel');
+    const feedLink = document.getElementById('feedLink');
+    const feedStatus = document.getElementById('feedStatus');
+    const callHistory = document.getElementById('callHistory');
+
+    let current = new Date();
+    let selectedDate = null;
+    let editing = null;
+    let events = {};
+    let apartEntries = [];
+    let currentSha = null;
+    let lastTickKey = '';
+
+    weekdays.forEach(w => {
+      const el = document.createElement('div');
+      el.className = 'weekday';
+      el.textContent = w;
+      weekdayRow.appendChild(el);
+    });
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function dateKeyOf(date) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
+
+    function todayKey() {
+      return dateKeyOf(new Date());
+    }
+
+    function minutesOfDay(value) {
+      const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ''));
+      if (!match) return null;
+      const hours = Number(match[1]);
+      const minutes = Number(match[2]);
+      if (hours > 23 || minutes > 59) return null;
+      return hours * 60 + minutes;
+    }
+
+    function formatClock(value) {
+      const mins = minutesOfDay(value);
+      if (mins === null) return String(value || '');
+      const date = new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60);
+      return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    }
+
+    function formatDayLabel(dateKey) {
+      const date = new Date(dateKey + 'T00:00:00');
+      if (Number.isNaN(date.getTime())) return dateKey;
+      return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // 'now' while the event is happening, 'soon' before it starts today, 'done' after it.
+    function eventStatus(dateKey, startTime) {
+      const startMins = minutesOfDay(startTime);
+      if (startMins === null) return '';
+      const today = todayKey();
+      if (dateKey < today) return 'done';
+      if (dateKey > today) return 'soon';
+
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      if (nowMins < startMins) return 'soon';
+      if (nowMins < startMins + 90) return 'now';
+      return 'done';
+    }
+
+    function statusLabel(dateKey, startTime) {
+      const status = eventStatus(dateKey, startTime);
+      if (status === 'now') return 'Now';
+      if (status === 'done') return dateKey === todayKey() ? 'Done' : '';
+      if (status !== 'soon' || dateKey !== todayKey()) return '';
+
+      const startMins = minutesOfDay(startTime);
+      if (startMins === null) return '';
+      const now = new Date();
+      const diff = startMins - (now.getHours() * 60 + now.getMinutes());
+      if (diff <= 0) return 'Soon';
+      if (diff < 60) return `in ${diff} min`;
+      const hours = Math.floor(diff / 60);
+      const mins = diff % 60;
+      return `in ${hours}h${mins ? ' ' + mins + 'm' : ''}`;
+    }
+
+    function formatNowLine() {
+      const now = new Date();
+      const date = now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+      const time = now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      return `${date} · ${time}`;
+    }
+
+    function updateNowLine() {
+      nowLabel.innerHTML = `<span>It is</span> ${escapeHtml(formatNowLine())}`;
+    }
+
+    function sortDayEvents(list) {
+      return list
+        .map((event, index) => ({ event, index }))
+        .sort((a, b) => {
+          const am = minutesOfDay(a.event.startTime);
+          const bm = minutesOfDay(b.event.startTime);
+          if (am !== null && bm !== null) return am - bm;
+          if (am !== null) return -1;
+          if (bm !== null) return 1;
+          return a.index - b.index;
+        });
+    }
+
+    function jumpToHash() {
+      const match = /^#(\d{4})-(\d{2})-(\d{2})$/.exec(window.location.hash || '');
+      if (!match) return;
+      const year = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      const day = Number(match[3]);
+      const date = new Date(year, month, day);
+      if (!Number.isNaN(date.getTime())) current = new Date(year, month, 1);
+    }
+
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/calendar');
+        const json = await res.json();
+        events = json.events || {};
+        currentSha = json.sha || null;
+      } catch (e) {
+        events = {};
+        currentSha = null;
+      }
+      try {
+        const response = await fetch('/api/apart');
+        const json = await response.json();
+        apartEntries = Array.isArray(json.entries) ? json.entries : [];
+      } catch { apartEntries = []; }
+      jumpToHash();
+      updateNowLine();
+      render();
+      refreshCallHistory();
+    }
+
+    window.addEventListener('hashchange', () => {
+      jumpToHash();
+      render();
+    });
+
+    function render() {
+      daysGrid.innerHTML = '';
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      monthLabel.textContent = current.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const first = new Date(year, month, 1);
+      const last = new Date(year, month + 1, 0);
+      const startDay = first.getDay();
+      const totalDays = last.getDate();
+
+      for (let i = 0; i < startDay; i++) {
+        const pad = new Date(year, month, -(startDay - 1 - i));
+        const el = document.createElement('div');
+        el.className = 'day muted';
+        el.innerHTML = `<div class="day-header"><span class="day-number">${pad.getDate()}</span></div>`;
+        daysGrid.appendChild(el);
+      }
+
+      const today = todayKey();
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateKey = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+        const isToday = dateKey === today;
+        const el = document.createElement('div');
+        el.className = 'day' + (isToday ? ' today' : '');
+        const todayTag = isToday ? '<span class="today-tag">Today</span>' : '';
+        el.innerHTML = `<div class="day-header"><span class="day-number" data-dow="${new Date(year, month, d).toLocaleDateString(undefined, { weekday: 'short' })}">${d}</span>${todayTag}<button class="add-btn" title="Add event" aria-label="Add event on day ${d}">+</button></div>`;
+        el.title = 'Click to add an event';
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.event') || e.target.closest('.add-btn')) return;
+          openAdd(dateKey);
+        });
+        el.querySelector('.add-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openAdd(dateKey);
+        });
+
+        const specialEvents = (window.CHARLOTTE_LUKE_SPECIAL_DATES || []).filter(item => item.date === `${pad2(month + 1)}-${pad2(d)}`).map(item => ({
+          title: `${item.icon} ${item.title}`, time: 'Every year · reminder', specialDate: true
+        }));
+        const quietEvents = apartEntries.filter(entry => entry.from <= dateKey && dateKey <= entry.until).map(entry => ({
+          title: '🌙 ' + (entry.author || 'Us') + ' · quiet day',
+          time: entry.note || 'A little space, with care',
+          quietDay: true
+        }));
+        sortDayEvents([...(events[dateKey] || []), ...specialEvents, ...quietEvents]).forEach(({ event: ev, index }) => {
+          const status = eventStatus(dateKey, ev.startTime);
+          const evEl = document.createElement('div');
+          evEl.className = 'event' + (status ? ' ' + status : '') + (ev.specialDate ? ' special-date' : '') + (ev.quietDay ? ' quiet-calendar-event' : '') + (ev.kind === 'whatsapp-call' ? ' call-event' : '');
+          evEl.title = ev.specialDate ? 'Repeats every year' : ev.quietDay ? 'From Quiet Days' : 'Click to edit';
+
+          const top = document.createElement('div');
+          top.className = 'event-top';
+          const strong = document.createElement('strong');
+          strong.textContent = ev.title || '';
+          top.appendChild(strong);
+          if (ev.startTime) {
+            const clock = document.createElement('span');
+            clock.className = 'event-clock';
+            clock.textContent = formatClock(ev.startTime);
+            top.appendChild(clock);
+          }
+          evEl.appendChild(top);
+
+          if (ev.time) {
+            const details = document.createElement('div');
+            details.className = 'event-details';
+            details.textContent = ev.time;
+            evEl.appendChild(details);
+          }
+
+          const label = statusLabel(dateKey, ev.startTime);
+          if (label) {
+            const badge = document.createElement('span');
+            badge.className = 'event-badge';
+            badge.textContent = label;
+            evEl.appendChild(badge);
+          }
+
+          if (ev.author) {
+            const by = document.createElement('small');
+            by.className = 'event-by';
+            by.textContent = 'By ' + ev.author;
+            evEl.appendChild(by);
+          }
+
+          evEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (ev.specialDate || ev.quietDay) return;
+            const savedIndex = (events[dateKey] || []).findIndex(saved => saved === ev || (saved.id && saved.id === ev.id));
+            if (savedIndex >= 0) openEdit(dateKey, savedIndex);
+          });
+          el.appendChild(evEl);
+        });
+        daysGrid.appendChild(el);
+      }
+    }
+
+    async function getFeedLink(rotate = false) {
+      feedStatus.textContent = 'Getting our private calendar link…';
+      try {
+        const response = await fetch('/api/calendar-sync', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({action:rotate?'rotate':'get'}) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not create link');
+        feedLink.textContent = result.url;
+        feedLink.dataset.webcal = result.webcalUrl;
+        feedLink.classList.add('visible');
+        feedStatus.textContent = 'Private subscription link ready. Keep it between us; anyone who has it can view our calendar.';
+        return result;
+      } catch (error) { feedStatus.textContent = error.message; throw error; }
+    }
+    document.getElementById('googleSync').addEventListener('click', async () => {
+      try {
+        const link = await getFeedLink();
+        await navigator.clipboard?.writeText(link.url);
+        window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank', 'noopener');
+        feedStatus.textContent = 'Link copied. In Google Calendar, choose “From URL” and paste it. Google subscription can take a while to appear.';
+      } catch {}
+    });
+    document.getElementById('appleSync').addEventListener('click', async () => {
+      try {
+        const link = await getFeedLink();
+        window.location.href = link.webcalUrl;
+      } catch {}
+    });
+    document.getElementById('rotateFeed').addEventListener('click', async () => {
+      if (!await siteDialog.confirm('Make a new calendar link? The old link will stop working.')) return;
+      try { await getFeedLink(true); } catch {}
+    });
+    function refreshCallHistory() {
+      const calls = Object.entries(events).flatMap(([date, list]) => (list || []).filter(event => event.kind === 'whatsapp-call').map(event => ({ date, event }))).sort((a,b) => (b.date + (b.event.startTime||'')).localeCompare(a.date + (a.event.startTime||''))).slice(0,8);
+      callHistory.innerHTML = '';
+      if (!calls.length) { callHistory.textContent = 'No calls logged yet.'; return; }
+      calls.forEach(({date,event}) => {
+        const row = document.createElement('div');
+        row.textContent = `${date} · ${event.callType || 'voice'}${event.startTime ? ' · ' + formatClock(event.startTime) : ''}${event.durationMinutes ? ' · ' + event.durationMinutes + ' min' : ''} · ${event.initiatedBy || event.author || 'Us'}`;
+        callHistory.appendChild(row);
+      });
+    }
+    const callDate = document.getElementById('callDate');
+    callDate.value = todayKey();
+    document.getElementById('saveCall').addEventListener('click', async () => {
+      const date = callDate.value;
+      const duration = Number(document.getElementById('callDuration').value);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (duration && (!Number.isInteger(duration) || duration < 1 || duration > 1440))) {
+        siteDialog.alert('Choose a valid day and call duration.'); return;
+      }
+      const author = localStorage.getItem('charlotte-user') || 'Us';
+      const type = document.getElementById('callType').value;
+      const event = { title: `WhatsApp ${type} call`, kind:'whatsapp-call', callType:type, durationMinutes:duration || null, initiatedBy:author, startTime:document.getElementById('callTime').value || '', time:'', author, date:new Date().toISOString() };
+      const button = document.getElementById('saveCall');
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/calendar', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({date,event})});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save call');
+        (events[date] ||= []).push({...event,id:result.id});
+        render();
+        refreshCallHistory();
+        document.getElementById('callDuration').value = '';
+        feedStatus.textContent = 'Call saved to our shared calendar.';
+      } catch(error) { siteDialog.alert(error.message); }
+      finally { button.disabled = false; }
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showModal() {
+      modal.classList.add('active');
+      eventTitle.focus();
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      editing = null;
+      selectedDate = null;
+      deleteEvent.style.display = 'none';
+      eventHint.classList.remove('visible');
+    }
+
+    function openAdd(key) {
+      selectedDate = key;
+      editing = null;
+      modalTitle.textContent = 'Add event';
+      eventDateLabel.textContent = formatDayLabel(key);
+      eventTitle.value = '';
+      eventStart.value = '';
+      eventTime.value = '';
+      deleteEvent.style.display = 'none';
+      eventHint.classList.remove('visible');
+      showModal();
+    }
+
+    function openEdit(key, index) {
+      const ev = events[key] && events[key][index];
+      if (!ev) return;
+      selectedDate = key;
+      editing = { date: key, index, id: ev.id || '', event: ev };
+      modalTitle.textContent = 'Edit event';
+      eventDateLabel.textContent = formatDayLabel(key);
+      eventTitle.value = ev.title || '';
+      eventStart.value = ev.startTime || '';
+      eventTime.value = ev.time || '';
+
+      const isTikTok = ev.source === 'tiktok';
+      deleteEvent.style.display = isTikTok ? 'none' : '';
+      if (isTikTok) {
+        eventHint.textContent = 'This event came from one of our TikTok plans. We can tweak it here, but it will reset if that plan changes. Edit the plan to make a lasting change.';
+        eventHint.classList.add('visible');
+      } else {
+        eventHint.classList.remove('visible');
+      }
+      showModal();
+    }
+
+    cancelEvent.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
+    saveEvent.addEventListener('click', async () => {
+      if (!selectedDate && !editing) return;
+      const title = eventTitle.value.trim();
+      if (!title) {
+        eventTitle.focus();
+        return;
+      }
+      const author = localStorage.getItem('charlotte-user') || 'Unknown';
+      const event = { ...(editing?.event || {}), title, startTime: eventStart.value || '', time: eventTime.value.trim(), author, date: new Date().toLocaleString() };
+      saveEvent.disabled = true;
+      try {
+        const target = editing ? { ...editing } : null;
+        const isEdit = !!target;
+        const addDate = selectedDate;
+        const payload = isEdit
+          ? { action: 'update', date: target.date, index: target.index, id: target.id, event }
+          : { date: addDate, event };
+
+        const res = await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to save');
+        currentSha = json.sha || currentSha;
+
+        if (isEdit) {
+          const list = events[target.date] || [];
+          if (list[target.index]) {
+            list[target.index] = { ...list[target.index], title, startTime: event.startTime, time: event.time, id: list[target.index].id || json.id, editedAt: new Date().toISOString() };
+          }
+        } else {
+          if (!events[addDate]) events[addDate] = [];
+          events[addDate].push({ ...event, id: json.id });
+        }
+        closeModal();
+        render(); refreshCallHistory();
+      } catch (e) {
+        siteDialog.alert('Error: ' + e.message);
+      } finally {
+        saveEvent.disabled = false;
+      }
+    });
+
+    deleteEvent.addEventListener('click', async () => {
+      if (!editing) return;
+      const target = { ...editing };
+      const label = target.event.title || 'this event';
+      if (!await siteDialog.confirm('Delete "' + label + '"?')) return;
+      deleteEvent.disabled = true;
+      try {
+        const res = await fetch('/api/calendar', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', date: target.date, index: target.index, id: target.id })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to delete');
+        currentSha = json.sha || currentSha;
+        const list = events[target.date] || [];
+        list.splice(target.index, 1);
+        if (list.length === 0) delete events[target.date];
+        closeModal();
+        render(); refreshCallHistory();
+      } catch (e) {
+        siteDialog.alert('Error: ' + e.message);
+      } finally {
+        deleteEvent.disabled = false;
+      }
+    });
+
+    function slideMonth(direction) {
+      daysGrid.classList.remove('slide-next', 'slide-prev');
+      void daysGrid.offsetWidth;
+      daysGrid.classList.add(direction > 0 ? 'slide-next' : 'slide-prev');
+    }
+    prevMonth.addEventListener('click', () => { current.setMonth(current.getMonth() - 1); render(); slideMonth(-1); });
+    nextMonth.addEventListener('click', () => { current.setMonth(current.getMonth() + 1); render(); slideMonth(1); });
+    todayBtn.addEventListener('click', () => {
+      current = new Date();
+      render();
+    });
+
+    function tick() {
+      updateNowLine();
+      const now = new Date();
+      const key = dateKeyOf(now) + ' ' + now.getHours() + ':' + now.getMinutes();
+      if (key === lastTickKey) return;
+      lastTickKey = key;
+      if (!modal.classList.contains('active')) render();
+    }
+
+    tick();
+    setInterval(tick, 15000);
+    loadEvents();
+  </script>
+  <script src="avatar.js"></script>
+  <script src="dialog.js"></script>
+</body>
+</html>

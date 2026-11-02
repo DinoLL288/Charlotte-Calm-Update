@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="site-shell-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <style>
+    :root { --sky: #a4deff; --deep-blue: #245b85; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: linear-gradient(145deg, #c8edff, var(--sky) 55%, #8ccfff);
+      color: var(--deep-blue);
+      display: grid;
+      place-items: center;
+    }
+    .card {
+      width: min(420px, 92vw);
+      background: #ffffffee;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px #347eac30;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e8f6ff;
+      box-shadow: 0 10px 24px #347eac25;
+    }
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: white;
+      color: #2873a6;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 7px 20px #347eac35;
+      cursor: pointer;
+    }
+    .top-bar { position: absolute; top: 16px; left: 16px; }
+    .subtitle {
+      margin: -6px 0 0;
+      color: #3b7db3;
+      font-size: 0.98rem;
+    }
+    .section-title {
+      width: 100%;
+      margin: 6px 0 -4px;
+      text-align: left;
+      color: #2873a6;
+      font-size: 1rem;
+    }
+    .settings-row{width:100%;display:grid;gap:7px;text-align:left;color:#486a83;font-size:.9rem;font-weight:700}.settings-row select,.settings-row input[type=color]{width:100%;min-height:44px;padding:9px 12px;border:1px solid #c8dceb;border-radius:13px;background:#fffefa;color:#174866;font:inherit}.settings-row input[type=color]{height:48px;padding:5px}.setting-check{display:flex;align-items:flex-start;gap:10px;width:100%;padding:13px;border:1px solid #dce9ef;border-radius:14px;background:#f4f9fb;color:#486a83;text-align:left;line-height:1.45}.setting-check input{margin-top:3px;accent-color:#347fa3}.settings-help,.settings-status{width:100%;margin:0;color:#607e92;font-size:.84rem;line-height:1.5;text-align:left}.settings-status{min-height:1.4em;color:#73591f;font-weight:700}
+    .settings-group{width:100%;display:grid;gap:12px;padding:15px;border:1px solid #e0ebf0;border-radius:18px;background:#fffefa}.settings-group h2{margin:0;text-align:left;color:#174866;font:700 1.12rem var(--font-display,Georgia,serif)}.setting-check input{flex:none}.settings-row input[type=time]{font-variant-numeric:tabular-nums}.card{width:min(520px,94vw);max-height:calc(100vh - 36px);overflow:auto;align-items:stretch;text-align:left;padding:24px}.card>h1,.card>.subtitle{text-align:center}.card>h1{margin:0}.card .avatar{align-self:center}.card>input[type=file]{align-self:center;max-width:100%}.card>.button{align-self:center}.top-bar{z-index:2}
+    .shared-accounts-list{display:grid;gap:12px}.shared-account{display:grid;gap:9px;padding:12px;border:1px solid #dce9ef;border-radius:15px;background:#f6fafc}.shared-account-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.shared-account-head strong{color:#174866}.shared-account .settings-row{font-size:.82rem}.shared-account input{width:100%;min-height:42px;padding:9px 11px;border:1px solid #c8dceb;border-radius:11px;background:#fffefa;color:#174866;font:inherit}.shared-account input:focus{outline:2px solid #8cc5df;outline-offset:1px}.shared-account-meta{margin:0;color:#728b9b;font-size:.76rem}.shared-account .remove-account{border:0;border-radius:999px;background:#fff0f1;color:#965564;padding:7px 11px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}.shared-account-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.shared-account-actions .button{align-self:auto}
+  </style>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="site-polish.css" data-site-polish="true"><link rel="stylesheet" href="site-theme.css" data-site-theme="true"><link rel="stylesheet" href="motion.css">
+</head>
+<body>
+  <div class="top-bar">
+    <a class="button" href="index.html">← Back to hub</a>
+  </div>
+  <div class="card">
+    <h1>Settings</h1>
+    <p class="subtitle">Signed in as <strong id="username"></strong></p>
+    <h2 class="section-title">Profile picture</h2>
+    <img id="avatar" class="avatar" src="https://ui-avatars.com/api/?name=User&background=e8f6ff&color=2873a6&size=256" alt="Profile picture">
+    <input type="file" id="avatarInput" accept="image/*">
+    <button class="button" id="saveAvatar">Save profile picture</button>
+    <section class="settings-group"><h2>Appearance</h2>
+      <label class="settings-row" for="themeChoice">Site theme<select id="themeChoice"><option value="blue">Quiet blue (softer)</option><option value="midnight">Blue dusk</option><option value="lavender">Lavender cloud</option><option value="sage">Soft sage</option><option value="sunset">Warm sunset</option></select></label>
+      <label class="settings-row" for="accentChoice">Custom accent color<input id="accentChoice" type="color" value="#347fa3"></label>
+    </section>
+    <section class="settings-group"><h2>Comfort and accessibility</h2>
+      <label class="settings-row" for="textSize">Text size<select id="textSize"><option value="normal">Comfortable</option><option value="large">Larger text</option></select></label>
+      <label class="setting-check"><input id="reducedMotion" type="checkbox"><span>Reduce animations and movement</span></label>
+      <label class="setting-check"><input id="compactLayout" type="checkbox"><span>Use a more compact layout</span></label>
+      <label class="setting-check"><input id="showReactions" type="checkbox" checked><span>Show the floating emoji reaction button</span></label>
+      <label class="setting-check"><input id="showPresence" type="checkbox" checked><span>Show when the other person is online</span></label>
+    </section>
+    <section class="settings-group"><h2>Special-day reminders</h2>
+      <p class="settings-help">These reminders stay on. Charlotte’s birthday is 9 March, Luke’s is 21 July, and our anniversary is 26 October. The site shows an in-app reminder and can send browser alerts while it is open.</p>
+      <label class="settings-row" for="reminderLeadDays">Send an extra heads-up<select id="reminderLeadDays"><option value="0">On the day</option><option value="1" selected>The day before and on the day</option><option value="3">3 days before and on the day</option><option value="7">1 week before and on the day</option><option value="14">2 weeks before and on the day</option></select></label>
+      <label class="settings-row" for="reminderTime">Reminder time on this device<input id="reminderTime" type="time" value="09:00"></label>
+      <button class="button" id="enableNotifications" type="button">Allow browser notifications</button>
+      <p class="settings-help" id="notificationHelp">Browser permission is controlled by this device. If it is blocked, the in-app reminders still appear.</p>
+    </section>
+    <section class="settings-group" id="sharedAccountsGroup">
+      <h2>Our shared accounts</h2>
+      <p class="settings-help">Keep our account names and profile links together. These notes don’t change privacy settings, connect an upload service, or store passwords and login tokens.</p>
+      <div class="shared-accounts-list" id="sharedAccountsList"><p class="settings-help">Loading our accounts…</p></div>
+      <div class="shared-account-actions">
+        <button class="button" id="addSharedAccount" type="button">Add an account</button>
+        <button class="button" id="saveSharedAccounts" type="button">Save shared accounts</button>
+      </div>
+      <p class="settings-status" id="sharedAccountsStatus" role="status"></p>
+    </section>
+    <section class="settings-group" id="youtube-setup">
+      <h2>YouTube upload connection</h2>
+      <p class="settings-help">For uploads, create a Google OAuth client ID for a web application and enable YouTube Data API v3 in its Google Cloud project. Add our site’s production origin as an authorized JavaScript origin, then save the client ID here. Add both of our Google accounts as test users while the consent screen is in testing. We’ll authorize YouTube in Google’s own popup when we upload.</p>
+      <label class="settings-row" for="youtubeClientId">Google OAuth web client ID<input id="youtubeClientId" type="text" maxlength="300" autocomplete="off" placeholder="…apps.googleusercontent.com"></label>
+      <div class="shared-account-actions"><button class="button" id="saveYoutubeClientId" type="button">Save YouTube connection</button><a class="button" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Open Google Cloud ↗</a></div>
+      <p class="settings-status" id="youtubeClientStatus" role="status"></p>
+    </section>
+    <button class="button" id="savePreferences" type="button">Save our settings</button>
+    <p class="settings-status" id="preferencesStatus" role="status"></p>
+    <h2 class="section-title">Account</h2>
+    <button class="button" id="logout">Logout</button>
+  </div>
+
+  <script>
+    if (!localStorage.getItem('charlotte-user')) {
+      window.location.href = 'login.html';
+    }
+    const user = localStorage.getItem('charlotte-user');
+    document.getElementById('username').textContent = user;
+    const avatar = document.getElementById('avatar');
+    const avatarInput = document.getElementById('avatarInput');
+    const saveAvatar = document.getElementById('saveAvatar');
+    const themeChoice = document.getElementById('themeChoice');
+    const accentChoice = document.getElementById('accentChoice');
+    const textSize = document.getElementById('textSize');
+    const reducedMotion = document.getElementById('reducedMotion');
+    const compactLayout = document.getElementById('compactLayout');
+    const showReactions = document.getElementById('showReactions');
+    const showPresence = document.getElementById('showPresence');
+    const reminderLeadDays = document.getElementById('reminderLeadDays');
+    const reminderTime = document.getElementById('reminderTime');
+    const preferencesStatus = document.getElementById('preferencesStatus');
+    const sharedAccountsList = document.getElementById('sharedAccountsList');
+    const sharedAccountsStatus = document.getElementById('sharedAccountsStatus');
+    const youtubeClientIdInput = document.getElementById('youtubeClientId');
+    const youtubeClientStatus = document.getElementById('youtubeClientStatus');
+    let sharedAccounts = [];
+    const preferenceKey = 'charlotte-preferences-' + user;
+    function applyPreferences(preferences) {
+      if (!preferences) return;
+      themeChoice.value = preferences.theme || 'blue';
+      accentChoice.value = preferences.accent || '#347fa3';
+      textSize.value = preferences.textSize || 'normal';
+      reducedMotion.checked = Boolean(preferences.reducedMotion);
+      compactLayout.checked = Boolean(preferences.compactLayout);
+      showReactions.checked = preferences.showReactions !== false;
+      showPresence.checked = preferences.showPresence !== false;
+      reminderLeadDays.value = String(preferences.reminderLeadDays ?? 1);
+      reminderTime.value = preferences.reminderTime || '09:00';
+      document.documentElement.dataset.coupleTheme = themeChoice.value;
+      document.documentElement.style.setProperty('--couple-accent', accentChoice.value);
+      document.documentElement.dataset.textSize = textSize.value;
+      document.documentElement.dataset.reducedMotion = String(reducedMotion.checked);
+      document.documentElement.dataset.compactLayout = String(compactLayout.checked);
+      document.documentElement.dataset.showReactions = String(showReactions.checked);
+      document.documentElement.dataset.showPresence = String(showPresence.checked);
+      const saved = { ...preferences, theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value, birthdayReminders: true };
+      localStorage.setItem(preferenceKey, JSON.stringify(saved));
+      window.dispatchEvent(new CustomEvent('charlotte-preferences', { detail: preferences }));
+      if (window.parent !== window) window.parent.postMessage({ type: 'charlotte-theme', preferences: saved }, location.origin);
+      updateNotificationHelp();
+    }
+    try { applyPreferences(JSON.parse(localStorage.getItem(preferenceKey) || 'null')); } catch (e) {}
+    fetch('/api/question-room?view=preferences&user=' + encodeURIComponent(user), { cache: 'no-store' }).then(res => res.json()).then(applyPreferences).catch(() => {});
+    document.getElementById('savePreferences').addEventListener('click', async () => {
+      const preferences = { theme: themeChoice.value, accent: accentChoice.value, textSize: textSize.value, reducedMotion: reducedMotion.checked, compactLayout: compactLayout.checked, showReactions: showReactions.checked, showPresence: showPresence.checked, reminderLeadDays: Number(reminderLeadDays.value), reminderTime: reminderTime.value };
+      const button = document.getElementById('savePreferences'); button.disabled = true; preferencesStatus.textContent = 'Saving our settings…';
+      try {
+        const response = await fetch('/api/question-room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'preferences', user, preferences }) });
+        const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Could not save settings.');
+        applyPreferences(result.preferences); preferencesStatus.textContent = 'Our settings are saved for this profile.';
+      } catch (error) { preferencesStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    themeChoice.addEventListener('change', () => { document.documentElement.dataset.coupleTheme = themeChoice.value; });
+    accentChoice.addEventListener('input', () => document.documentElement.style.setProperty('--couple-accent', accentChoice.value));
+    function updateNotificationHelp() {
+      const help = document.getElementById('notificationHelp');
+      if (!('Notification' in window)) { help.textContent = 'This browser does not support system notifications. In-app reminders still appear.'; return; }
+      help.textContent = Notification.permission === 'granted' ? 'Browser notifications are allowed on this device. Reminders will appear while our site is open.' : Notification.permission === 'denied' ? 'Browser notifications are blocked in this device’s settings. In-app reminders still appear.' : 'Allow browser notifications for alerts while the site is open. In-app reminders stay on either way.';
+    }
+    updateNotificationHelp();
+    document.getElementById('enableNotifications').addEventListener('click', async () => {
+      if (!('Notification' in window)) { preferencesStatus.textContent = 'This browser does not support notifications; in-app reminders remain on.'; return; }
+      try {
+        if (window.parent !== window) {
+          preferencesStatus.textContent = 'Asking this browser to allow reminders…';
+          window.parent.postMessage({ type: 'request-browser-reminders' }, location.origin);
+        } else {
+          const permission = await Notification.requestPermission();
+          preferencesStatus.textContent = permission === 'granted' ? 'Browser reminders are enabled on this device.' : 'Browser notifications were not allowed. Our in-app reminders are still on.';
+          updateNotificationHelp();
+        }
+      } catch (error) { preferencesStatus.textContent = 'This browser could not enable notifications here. We can check its notification settings.'; }
+    });
+    window.addEventListener('message', event => {
+      if (event.origin !== location.origin || event.data?.type !== 'browser-reminder-permission') return;
+      preferencesStatus.textContent = event.data.permission === 'granted' ? 'Browser reminders are enabled on this device.' : 'Browser notifications were not allowed. Our in-app reminders are still on.';
+      updateNotificationHelp();
+    });
+    
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile?user=' + encodeURIComponent(user));
+        const json = await res.json();
+        if (json.url) avatar.src = json.url;
+      } catch (e) {}
+    }
+    loadProfile();
+
+    function accountField(account, key, labelText, placeholder = '') {
+      const label = document.createElement('label');
+      label.className = 'settings-row';
+      label.textContent = labelText;
+      const input = document.createElement('input');
+      input.type = key === 'profileUrl' ? 'url' : 'text';
+      input.dataset.field = key;
+      input.maxLength = key === 'note' ? 300 : key === 'profileUrl' ? 500 : 100;
+      input.placeholder = placeholder;
+      input.value = account[key] || '';
+      label.appendChild(input);
+      return label;
+    }
+    function renderSharedAccounts() {
+      sharedAccountsList.replaceChildren();
+      if (!sharedAccounts.length) {
+        const empty = document.createElement('p');
+        empty.className = 'settings-help';
+        empty.textContent = 'No accounts saved yet.';
+        sharedAccountsList.appendChild(empty);
+      }
+      sharedAccounts.forEach((account, index) => {
+        const card = document.createElement('article');
+        card.className = 'shared-account';
+        card.dataset.id = account.id || '';
+        const head = document.createElement('div');
+        head.className = 'shared-account-head';
+        const title = document.createElement('strong');
+        title.textContent = account.name || 'Shared account';
+        if (account.profileUrl) {
+          try {
+            const profileUrl = new URL(account.profileUrl);
+            if (profileUrl.protocol === 'https:') {
+              const open = document.createElement('a');
+              open.href = profileUrl.href;
+              open.target = '_blank';
+              open.rel = 'noopener noreferrer';
+              open.textContent = 'Open profile ↗';
+              open.style.cssText = 'margin-left:auto;color:#347fa3;font-size:.8rem;font-weight:700;text-decoration:none';
+              head.append(title, open);
+            } else head.appendChild(title);
+          } catch { head.appendChild(title); }
+        } else head.appendChild(title);
+        const remove = document.createElement('button');
+        remove.className = 'remove-account';
+        remove.type = 'button';
+        remove.textContent = 'Remove';
+        remove.addEventListener('click', () => { sharedAccounts.splice(index, 1); renderSharedAccounts(); });
+        head.appendChild(remove);
+        card.append(head,
+          accountField(account, 'name', 'Account name', 'TikTok'),
+          accountField(account, 'platform', 'Platform', 'TikTok, YouTube…'),
+          accountField(account, 'handle', 'Username or handle', '@name'),
+          accountField(account, 'profileUrl', 'Profile link', 'https://…'),
+          accountField(account, 'visibility', 'Privacy note', 'Public / private videos'),
+          accountField(account, 'note', 'Note (optional)', 'Anything we should remember')
+        );
+        const meta = document.createElement('p');
+        meta.className = 'shared-account-meta';
+        meta.textContent = account.updatedBy ? 'Last updated by ' + account.updatedBy + (account.updatedAt ? ' · ' + new Date(account.updatedAt).toLocaleString() : '') : 'Shared profile details';
+        card.appendChild(meta);
+        sharedAccountsList.appendChild(card);
+      });
+    }
+    async function loadSharedAccounts() {
+      try {
+        const response = await fetch('/api/shared-accounts');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load our accounts.');
+        sharedAccounts = Array.isArray(result.accounts) ? result.accounts : [];
+        renderSharedAccounts();
+      } catch (error) {
+        sharedAccountsList.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'settings-help';
+        message.textContent = error.message;
+        sharedAccountsList.appendChild(message);
+      }
+    }
+    document.getElementById('addSharedAccount').addEventListener('click', () => {
+      sharedAccounts.push({ id: crypto.randomUUID(), name: '', platform: '', handle: '', profileUrl: '', visibility: '', note: '' });
+      renderSharedAccounts();
+      sharedAccountsList.lastElementChild?.querySelector('input')?.focus();
+    });
+    document.getElementById('saveSharedAccounts').addEventListener('click', async () => {
+      const button = document.getElementById('saveSharedAccounts');
+      const accounts = [...sharedAccountsList.querySelectorAll('.shared-account')].map(card => {
+        const entry = { id: card.dataset.id };
+        card.querySelectorAll('[data-field]').forEach(input => { entry[input.dataset.field] = input.value.trim(); });
+        return entry;
+      });
+      button.disabled = true;
+      sharedAccountsStatus.textContent = 'Saving our shared accounts…';
+      try {
+        const response = await fetch('/api/shared-accounts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accounts }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save our accounts.');
+        sharedAccounts = result.accounts || accounts;
+        renderSharedAccounts();
+        sharedAccountsStatus.textContent = 'Our shared account details are saved.';
+      } catch (error) { sharedAccountsStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    loadSharedAccounts();
+    async function loadYoutubeClientId() {
+      try {
+        const response = await fetch('/api/youtube-config');
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not load YouTube setup.');
+        youtubeClientIdInput.value = result.clientId || '';
+      } catch (error) { youtubeClientStatus.textContent = error.message; }
+    }
+    document.getElementById('saveYoutubeClientId').addEventListener('click', async () => {
+      const button = document.getElementById('saveYoutubeClientId');
+      button.disabled = true;
+      youtubeClientStatus.textContent = 'Saving YouTube setup…';
+      try {
+        const response = await fetch('/api/youtube-config', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({clientId:youtubeClientIdInput.value.trim()}) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not save YouTube setup.');
+        youtubeClientIdInput.value = result.clientId || '';
+        youtubeClientStatus.textContent = result.clientId ? 'YouTube upload setup is saved for both of us.' : 'YouTube upload setup was cleared.';
+      } catch (error) { youtubeClientStatus.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    loadYoutubeClientId();
+    
+    let selectedFile = null;
+    avatarInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        avatar.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    saveAvatar.addEventListener('click', async () => {
+      if (!selectedFile) {
+        siteDialog.alert('Select a picture first');
+        return;
+      }
+      saveAvatar.disabled = true;
+      saveAvatar.textContent = 'Saving...';
+      try {
+        const data = new FormData();
+        data.append('avatar', selectedFile);
+        data.append('user', user);
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          body: data
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        if (json.url) {
+          avatar.src = json.url;
+          localStorage.setItem('charlotte-avatar-' + user, json.url);
+        }
+        siteDialog.alert('Profile picture saved!');
+      } catch (e) {
+        siteDialog.alert(e.message);
+      } finally {
+        saveAvatar.disabled = false;
+        saveAvatar.textContent = 'Save profile picture';
+      }
+    });
+    
+    document.getElementById('logout').addEventListener('click', () => {
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).finally(() => {
+        localStorage.removeItem('charlotte-user');
+        window.location.href = 'login.html';
+      });
+    });
+  </script>
+  <script src="dialog.js"></script>
+  <script src="avatar.js"></script>
+</body>
+</html>
